@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CustomerIQ — Customer Churn Prediction Dashboard</title>
+    <meta name="description" content="Enterprise customer churn prediction and analytics dashboard powered by XGBoost and SHAP.">
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/static/styles.css?v=4">
+</head>
+<body>
+
+    <!-- =========================================
+         LEFT SIDEBAR NAVIGATION
+    ========================================== -->
+    <aside class="sidebar">
+        <div>
+            <!-- Brand Logo & Header -->
+            <div class="brand-container">
+                <div class="brand-logo">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <h2>CustomerIQ</h2>
+                    <p>Smarter Insights. Stronger Relationships.</p>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <ul class="nav-menu">
+                <li class="nav-item active" id="nav-dashboard">
+                    <a href="#dashboard">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                        </svg>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item" id="nav-prediction">
+                    <a href="#prediction">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                            <polyline points="17 6 23 6 23 12"></polyline>
+                        </svg>
+                        Churn Prediction
+                    </a>
+                </li>
+                <li class="nav-item" id="nav-customers">
+                    <a href="#customers">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                        Customers
+                    </a>
+                </li>
+                <li class="nav-item" id="nav-analytics">
+                    <a href="#analytics">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="2" width="20" height="20" rx="2" ry="2"></rect>
+                            <line x1="12" y1="18" x2="12" y2="12"></line>
+                            <line x1="6" y1="18" x2="6" y2="8"></line>
+                            <line x1="18" y1="18" x2="18" y2="16"></line>
+                        </svg>
+                        Analytics
+                    </a>
+                </li>
+                <li class="nav-item" id="nav-reports">
+                    <a href="#reports">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                        Reports
+                    </a>
+                </li>
+                <li class="nav-item" id="nav-settings">
+                    <a href="#settings">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                        </svg>
+                        Settings
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Model Status Card -->
+        <div class="model-status-card">
+            <div class="status-indicator">
+                <span class="status-dot"></span> Model Status
+            </div>
+            <div class="status-title">Online</div>
+            <div class="status-time">
+                Last updated<br>
+                <b>Apr 30, 2025 10:24 AM</b>
+            </div>
+        </div>
+    </aside>
+
+    <!-- =========================================
+         MAIN APPLICATION VIEW
+    ========================================== -->
+    <div class="main-wrapper">
+
+        <!-- Top Header Bar -->
+        <header class="top-header">
+            <div class="search-bar">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="header-search" placeholder="Search customers by ID or segment..." oninput="handleSearch(event)">
+                <kbd class="search-shortcut">Ctrl+K</kbd>
+            </div>
+            <div class="header-right">
+                <div class="notif-container">
+                    <button class="header-icon-btn" id="notif-btn" title="Notifications" onclick="toggleNotifDropdown(event)">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                        <span class="notif-badge">3</span>
+                    </button>
+                    <!-- Notification Dropdown -->
+                    <div class="notif-dropdown" id="notif-dropdown">
+                        <div class="notif-header">
+                            <h4>Notifications</h4>
+                            <span class="notif-count">3 new</span>
+                        </div>
+                        <div class="notif-list">
+                            <div class="notif-item unread">
+                                <div class="notif-icon high-risk">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                </div>
+                                <div class="notif-content">
+                                    <p class="notif-text"><strong>High Churn Spike:</strong> 14 Month-to-Month accounts flagged</p>
+                                    <span class="notif-time">10m ago</span>
+                                </div>
+                            </div>
+                            <div class="notif-item unread">
+                                <div class="notif-icon medium-risk">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                                </div>
+                                <div class="notif-content">
+                                    <p class="notif-text"><strong>Model Status:</strong> XGBoost & SHAP explainer ready</p>
+                                    <span class="notif-time">1h ago</span>
+                                </div>
+                            </div>
+                            <div class="notif-item">
+                                <div class="notif-icon low-risk">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                                </div>
+                                <div class="notif-content">
+                                    <p class="notif-text"><strong>Weekly Summary:</strong> Retention report generated</p>
+                                    <span class="notif-time">3h ago</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="user-profile">
+                    <div class="user-avatar">AS</div>
+                    <div class="user-info">
+                        <span class="user-name">Aarav Sharma</span>
+                        <span class="user-role">Data Analyst</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="content-container">
+
+            <!-- ======================= PAGE: DASHBOARD ======================= -->
+            <section id="dashboard" class="page-section active">
+
+                <!-- Page Title & Filter Bar -->
+                <div class="page-header">
+                    <div class="page-title">
+                        <h1>Customer Churn Prediction</h1>
+                        <p>Identify at-risk customers, understand churn drivers, and take proactive action to improve retention and drive long-term growth.</p>
+                    </div>
+                    <div class="header-controls">
+                        <div class="filter-btn">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                            <span>Apr 1, 2025 – Apr 30, 2025</span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </div>
+                        <select class="dropdown-select" id="segment-select" onchange="handleSegmentChange(this.value)">
+                            <option value="All Segments" selected>All Segments</option>
+                            <option value="Month-to-month">Month-to-month Contract</option>
+                            <option value="One year">One Year Contract</option>
+                            <option value="Two year">Two Year Contract</option>
+                            <option value="Fiber optic">Fiber Optic Internet</option>
+                            <option value="DSL">DSL Internet</option>
+                            <option value="Electronic check">Electronic Check</option>
+                            <option value="Senior Citizens">Senior Citizens</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 1. KPI Cards Row -->
+                <section class="kpi-grid">
+                    <!-- Total Customers -->
+                    <div class="kpi-card">
+                        <div class="kpi-icon-wrap kpi-icon-blue">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                        </div>
+                        <div class="kpi-body">
+                            <span class="kpi-label">Total Customers</span>
+                            <span class="kpi-value" id="kpi-total">—</span>
+                            <div class="kpi-subline">
+                                <span class="trend-badge trend-up-green">↑ <span id="kpi-total-change">—</span></span>
+                                <span>vs. previous month</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- At-Risk Customers -->
+                    <div class="kpi-card">
+                        <div class="kpi-icon-wrap kpi-icon-red">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                <line x1="12" y1="9" x2="12" y2="13"></line>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                        </div>
+                        <div class="kpi-body">
+                            <span class="kpi-label">At-Risk Customers</span>
+                            <span class="kpi-value" id="kpi-atrisk">—</span>
+                            <div class="kpi-subline">
+                                <span id="kpi-atrisk-pct" style="margin-right: 4px;">—</span>
+                                <span class="trend-badge trend-up-red">↑ <span id="kpi-atrisk-change">—</span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Churn Rate -->
+                    <div class="kpi-card">
+                        <div class="kpi-icon-wrap kpi-icon-green">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                <polyline points="9 12 11 14 15 10"></polyline>
+                            </svg>
+                        </div>
+                        <div class="kpi-body">
+                            <span class="kpi-label">Churn Rate</span>
+                            <span class="kpi-value" id="kpi-churnrate">—</span>
+                            <div class="kpi-subline">
+                                <span class="trend-badge trend-down-green">↓ <span id="kpi-churn-change">—</span></span>
+                                <span>vs. previous month</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Predicted Retention -->
+                    <div class="kpi-card">
+                        <div class="kpi-icon-wrap kpi-icon-purple">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="23 4 23 10 17 10"></polyline>
+                                <polyline points="1 20 1 14 7 14"></polyline>
+                                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                            </svg>
+                        </div>
+                        <div class="kpi-body">
+                            <span class="kpi-label">Predicted Retention <span style="font-size:0.68rem; color:#94a3b8;">(Next 30 Days)</span></span>
+                            <span class="kpi-value" id="kpi-retention">—</span>
+                            <div class="kpi-subline">
+                                <span class="trend-badge trend-up-green">↑ <span id="kpi-retention-change">—</span></span>
+                                <span>vs. previous month</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. Charts Row -->
+                <section class="charts-grid">
+                    <!-- Churn Prediction Overview (Line Chart) -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Churn Prediction Overview</h3>
+                            <div class="chart-legend">
+                                <span><span class="legend-dot dot-red"></span> Churned</span>
+                                <span><span class="legend-dot dot-blue"></span> Retained</span>
+                            </div>
+                        </div>
+                        <div class="chart-canvas-wrap">
+                            <canvas id="overviewChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Churn Risk Distribution (Donut) -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Churn Risk Distribution</h3>
+                        </div>
+                        <div class="donut-chart-container">
+                            <div class="donut-canvas-wrap">
+                                <canvas id="donutChart"></canvas>
+                                <div class="donut-center-text">
+                                    <div class="donut-center-pct" id="donut-center-pct">—</div>
+                                    <div class="donut-center-label">At-Risk</div>
+                                </div>
+                            </div>
+                            <div class="donut-legend-list">
+                                <div class="donut-legend-item">
+                                    <div class="donut-item-left">
+                                        <span class="legend-dot" style="background:#ef4444;"></span> High Risk
+                                    </div>
+                                    <span class="donut-item-val" id="pct-high-risk">—</span>
+                                </div>
+                                <div class="donut-legend-item">
+                                    <div class="donut-item-left">
+                                        <span class="legend-dot" style="background:#f59e0b;"></span> Medium Risk
+                                    </div>
+                                    <span class="donut-item-val" id="pct-med-risk">—</span>
+                                </div>
+                                <div class="donut-legend-item">
+                                    <div class="donut-item-left">
+                                        <span class="legend-dot" style="background:#10b981;"></span> Low Risk
+                                    </div>
+                                    <span class="donut-item-val" id="pct-low-risk">—</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Churn Factors (SHAP Bars) -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Top Churn Factors</h3>
+                        </div>
+                        <div class="factors-list" id="factors-container">
+                            <!-- Populated dynamically from API -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. Bottom Row: Recent Predictions Table & Insights Panel -->
+                <section class="bottom-grid">
+                    <!-- Recent Predictions Table -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Recent Predictions</h3>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);" id="table-total-count">
+                                Showing top at-risk accounts
+                            </div>
+                        </div>
+                        <div style="overflow-x: auto;">
+                            <table class="predictions-table">
+                                <thead>
+                                    <tr>
+                                        <th>Customer ID</th>
+                                        <th>Churn Probability</th>
+                                        <th>Risk Level</th>
+                                        <th>Predicted Churn Date</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="predictions-tbody">
+                                    <!-- Populated dynamically from API -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Insights & Recommendations -->
+                    <div class="dashboard-card insights-card">
+                        <div>
+                            <div class="insights-header">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="9" y1="18" x2="15" y2="18"></line>
+                                    <line x1="10" y1="22" x2="14" y2="22"></line>
+                                    <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path>
+                                </svg>
+                                <span>Insights &amp; Recommendations</span>
+                            </div>
+                            <ul class="insights-list" id="insights-container">
+                                <!-- Populated dynamically from API -->
+                            </ul>
+                        </div>
+                        <button class="export-btn" onclick="exportReport()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Export Report
+                        </button>
+                    </div>
+                </section>
+
+            </section><!-- END #dashboard -->
+
+
+            <!-- ======================= PAGE: CHURN PREDICTION ======================= -->
+            <section id="prediction" class="page-section">
+                <div class="page-header">
+                    <div class="page-title">
+                        <h1>Churn Prediction</h1>
+                        <p>Enter customer attributes to get a real-time churn probability and SHAP factor attribution from the trained XGBoost model.</p>
+                    </div>
+                </div>
+
+                <div class="simulator-section dashboard-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Live Customer Churn Simulator &amp; What-If Analyzer</h3>
+                    </div>
+                    <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:1.5rem;">
+                        Configure all customer attributes to simulate real-time probability and see instant SHAP feature attribution.
+                    </p>
+                    <form id="sim-form" onsubmit="handleSimulate(event)">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Gender</label>
+                                <select id="sim-gender" class="form-control">
+                                    <option value="Female">Female</option>
+                                    <option value="Male">Male</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Senior Citizen</label>
+                                <select id="sim-senior" class="form-control">
+                                    <option value="0">No (0)</option>
+                                    <option value="1">Yes (1)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Partner</label>
+                                <select id="sim-partner" class="form-control">
+                                    <option value="Yes">Yes</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Dependents</label>
+                                <select id="sim-dependents" class="form-control">
+                                    <option value="No">No</option>
+                                    <option value="Yes">Yes</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Tenure (Months)</label>
+                                <input type="number" id="sim-tenure" class="form-control" value="5" min="0" max="72">
+                            </div>
+                            <div class="form-group">
+                                <label>Phone Service</label>
+                                <select id="sim-phone" class="form-control">
+                                    <option value="Yes">Yes</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Multiple Lines</label>
+                                <select id="sim-multilines" class="form-control">
+                                    <option value="No">No</option>
+                                    <option value="Yes">Yes</option>
+                                    <option value="No phone service">No phone service</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Internet Service</label>
+                                <select id="sim-internet" class="form-control">
+                                    <option value="Fiber optic">Fiber optic</option>
+                                    <option value="DSL">DSL</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Online Security</label>
+                                <select id="sim-security" class="form-control">
+                                    <option value="No">No</option>
+                                    <option value="Yes">Yes</option>
+                                    <option value="No internet service">No internet service</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Online Backup</label>
+                                <select id="sim-backup" class="form-control">
+                                    <option value="No">No</option>
+                                    <option value="Yes">Yes</option>
+                                    <option value="No internet service">No internet service</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Device Protection</label>
+                                <select id="sim-device" class="form-control">
+                                    <option value="No">No</option>
+                                    <option value="Yes">Yes</option>
+                                    <option value="No internet service">No internet service</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Tech Support</label>
+                                <select id="sim-techsupport" class="form-control">
+                                    <option value="No">No</option>
+                                    <option value="Yes">Yes</option>
+                                    <option value="No internet service">No internet service</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Streaming TV</label>
+                                <select id="sim-tv" class="form-control">
+                                    <option value="No">No</option>
+                                    <option value="Yes">Yes</option>
+                                    <option value="No internet service">No internet service</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Streaming Movies</label>
+                                <select id="sim-movies" class="form-control">
+                                    <option value="No">No</option>
+                                    <option value="Yes">Yes</option>
+                                    <option value="No internet service">No internet service</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Contract Type</label>
+                                <select id="sim-contract" class="form-control">
+                                    <option value="Month-to-month">Month-to-month</option>
+                                    <option value="One year">One year</option>
+                                    <option value="Two year">Two year</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Paperless Billing</label>
+                                <select id="sim-paperless" class="form-control">
+                                    <option value="Yes">Yes</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Payment Method</label>
+                                <select id="sim-payment" class="form-control">
+                                    <option value="Electronic check">Electronic check</option>
+                                    <option value="Mailed check">Mailed check</option>
+                                    <option value="Bank transfer (automatic)">Bank transfer (automatic)</option>
+                                    <option value="Credit card (automatic)">Credit card (automatic)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Monthly Charges ($)</label>
+                                <input type="number" step="0.25" id="sim-monthly" class="form-control" value="85.00">
+                            </div>
+                            <div class="form-group">
+                                <label>Total Charges ($)</label>
+                                <input type="number" step="0.50" id="sim-total" class="form-control" value="425.00">
+                            </div>
+                            <div class="form-group" style="align-items:flex-end;">
+                                <button type="submit" class="export-btn" id="sim-submit-btn" style="width:100%; justify-content:center;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                                        <polyline points="17 6 23 6 23 12"></polyline>
+                                    </svg>
+                                    Run Simulation
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div id="sim-result-box" style="display:none; margin-top:1.5rem;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                            <div>
+                                <span style="font-size:0.8rem; color:var(--text-muted);">Simulated Churn Probability:</span>
+                                <span id="sim-prob" style="font-size:1.6rem; font-weight:800; margin-left:8px;">0.00</span>
+                            </div>
+                            <span id="sim-risk-badge" class="risk-pill">High</span>
+                        </div>
+                        <img id="sim-shap-img" class="shap-plot-img" src="" alt="SHAP plot">
+                    </div>
+                </div>
+            </section><!-- END #prediction -->
+
+
+            <!-- ======================= PAGE: CUSTOMERS ======================= -->
+            <section id="customers" class="page-section">
+                <div class="page-header">
+                    <div class="page-title">
+                        <h1>All Customers</h1>
+                        <p>Browse, search, and analyze the complete customer dataset with live churn predictions.</p>
+                    </div>
+                    <div class="header-controls">
+                        <select class="dropdown-select" id="cust-segment-select" onchange="handleCustomerSegmentChange(this.value)">
+                            <option value="All Segments" selected>All Segments</option>
+                            <option value="Month-to-month">Month-to-month</option>
+                            <option value="One year">One Year</option>
+                            <option value="Two year">Two Year</option>
+                            <option value="Fiber optic">Fiber Optic</option>
+                            <option value="DSL">DSL</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Customer List</h3>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);" id="cust-table-count">Loading...</div>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="predictions-table">
+                            <thead>
+                                <tr>
+                                    <th>Customer ID</th>
+                                    <th>Churn Probability</th>
+                                    <th>Risk Level</th>
+                                    <th>Contract</th>
+                                    <th>Tenure</th>
+                                    <th>Monthly Charges</th>
+                                    <th>Predicted Churn Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="all-customers-tbody">
+                                <tr><td colspan="8" style="text-align:center; padding:2rem; color:var(--text-muted);">Loading customers...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style="display:flex; justify-content:flex-end; gap:0.5rem; padding:1rem 0 0 0;">
+                        <button class="export-btn" style="background:#f1f5f9; color:#374151;" onclick="loadAllCustomers(-25)" id="cust-prev-btn">← Prev</button>
+                        <button class="export-btn" onclick="loadAllCustomers(25)" id="cust-next-btn">Next →</button>
+                    </div>
+                </div>
+            </section><!-- END #customers -->
+
+
+            <!-- ======================= PAGE: ANALYTICS ======================= -->
+            <section id="analytics" class="page-section">
+                <div class="page-header">
+                    <div class="page-title">
+                        <h1>Analytics</h1>
+                        <p>Deep-dive into churn drivers, segment performance, and model insights from real data.</p>
+                    </div>
+                </div>
+
+                <section class="charts-grid">
+                    <!-- Contract Type Breakdown -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Churn by Contract Type</h3>
+                        </div>
+                        <div class="chart-canvas-wrap">
+                            <canvas id="analyticsContractChart"></canvas>
+                        </div>
+                    </div>
+                    <!-- Internet Service Breakdown -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Churn by Internet Service</h3>
+                        </div>
+                        <div class="chart-canvas-wrap">
+                            <canvas id="analyticsInternetChart"></canvas>
+                        </div>
+                    </div>
+                    <!-- Tenure vs Churn -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Tenure Distribution (At-Risk)</h3>
+                        </div>
+                        <div class="chart-canvas-wrap">
+                            <canvas id="analyticsTenureChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="bottom-grid" style="margin-top:1.5rem;">
+                    <!-- Payment Method Breakdown -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Churn by Payment Method</h3>
+                        </div>
+                        <div class="chart-canvas-wrap" style="height:220px;">
+                            <canvas id="analyticsPaymentChart"></canvas>
+                        </div>
+                    </div>
+                    <!-- SHAP Global Feature Importance -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Global SHAP Feature Importance</h3>
+                        </div>
+                        <div class="factors-list" id="analytics-shap-factors">
+                            <p style="color:var(--text-muted); font-size:0.85rem;">Loading...</p>
+                        </div>
+                    </div>
+                </section>
+            </section><!-- END #analytics -->
+
+
+            <!-- ======================= PAGE: REPORTS ======================= -->
+            <section id="reports" class="page-section">
+                <div class="page-header">
+                    <div class="page-title">
+                        <h1>Reports</h1>
+                        <p>View and export structured churn reports with risk breakdowns and segment summaries.</p>
+                    </div>
+                    <div class="header-controls">
+                        <button class="export-btn" onclick="exportReport()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Export CSV
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Summary cards -->
+                <section class="kpi-grid" id="reports-kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-icon-wrap kpi-icon-red">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                        </div>
+                        <div class="kpi-body">
+                            <span class="kpi-label">High Risk</span>
+                            <span class="kpi-value" id="report-high">—</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon-wrap" style="background:#fef3c7;">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                        </div>
+                        <div class="kpi-body">
+                            <span class="kpi-label">Medium Risk</span>
+                            <span class="kpi-value" id="report-medium">—</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon-wrap kpi-icon-green">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+                        </div>
+                        <div class="kpi-body">
+                            <span class="kpi-label">Low Risk</span>
+                            <span class="kpi-value" id="report-low">—</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon-wrap kpi-icon-blue">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+                        </div>
+                        <div class="kpi-body">
+                            <span class="kpi-label">Total Analysed</span>
+                            <span class="kpi-value" id="report-total">—</span>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="dashboard-card" style="margin-top:1.5rem;">
+                    <div class="card-header">
+                        <h3 class="card-title">High &amp; Medium Risk Customer Report</h3>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="predictions-table">
+                            <thead>
+                                <tr>
+                                    <th>Customer ID</th>
+                                    <th>Churn Probability</th>
+                                    <th>Risk Level</th>
+                                    <th>Contract</th>
+                                    <th>Tenure (mo)</th>
+                                    <th>Monthly $</th>
+                                    <th>Predicted Churn Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="report-tbody">
+                                <tr><td colspan="7" style="text-align:center; padding:2rem; color:var(--text-muted);">Loading report...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section><!-- END #reports -->
+
+
+            <!-- ======================= PAGE: SETTINGS ======================= -->
+            <section id="settings" class="page-section">
+                <div class="page-header">
+                    <div class="page-title">
+                        <h1>Settings</h1>
+                        <p>Configure model thresholds, display preferences, and notification settings.</p>
+                    </div>
+                </div>
+
+                <div class="dashboard-card" style="max-width:700px;">
+                    <div class="card-header">
+                        <h3 class="card-title">Risk Threshold Configuration</h3>
+                    </div>
+                    <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:1.5rem;">
+                        Adjust the probability cutoffs used to classify customers as High, Medium, or Low risk. Changes apply to the live dashboard immediately.
+                    </p>
+                    <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
+                        <div class="form-group">
+                            <label>High Risk Threshold (≥)</label>
+                            <input type="number" class="form-control" id="setting-high-thresh" value="0.60" min="0" max="1" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label>Medium Risk Threshold (≥)</label>
+                            <input type="number" class="form-control" id="setting-med-thresh" value="0.35" min="0" max="1" step="0.01">
+                        </div>
+                    </div>
+                    <button class="export-btn" style="margin-top:1rem;" onclick="saveSettings()">Save Settings</button>
+                    <div id="settings-saved-msg" style="display:none; margin-top:0.75rem; color:#10b981; font-size:0.85rem; font-weight:600;">✓ Settings saved successfully.</div>
+                </div>
+
+                <div class="dashboard-card" style="max-width:700px; margin-top:1.5rem;">
+                    <div class="card-header">
+                        <h3 class="card-title">Model Information</h3>
+                    </div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem; font-size:0.85rem;">
+                        <div>
+                            <div style="color:var(--text-muted); font-size:0.72rem; font-weight:600; text-transform:uppercase; margin-bottom:4px;">Model Type</div>
+                            <div style="font-weight:600;">XGBoost Classifier (Tuned)</div>
+                        </div>
+                        <div>
+                            <div style="color:var(--text-muted); font-size:0.72rem; font-weight:600; text-transform:uppercase; margin-bottom:4px;">Dataset</div>
+                            <div style="font-weight:600;">Telco Customer Churn (7,043 records)</div>
+                        </div>
+                        <div>
+                            <div style="color:var(--text-muted); font-size:0.72rem; font-weight:600; text-transform:uppercase; margin-bottom:4px;">Explainer</div>
+                            <div style="font-weight:600;">SHAP TreeExplainer</div>
+                        </div>
+                        <div>
+                            <div style="color:var(--text-muted); font-size:0.72rem; font-weight:600; text-transform:uppercase; margin-bottom:4px;">Scaler</div>
+                            <div style="font-weight:600;">StandardScaler (fitted on training set)</div>
+                        </div>
+                    </div>
+                </div>
+            </section><!-- END #settings -->
+
+        </main>
+    </div>
+
+    <!-- =========================================
+         CUSTOMER SHAP DETAIL MODAL
+    ========================================== -->
+    <div class="modal-backdrop" id="shap-modal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close-btn" onclick="closeModalDirect()">×</button>
+            <div class="modal-header">
+                <h3 id="modal-cust-id">Customer CUST-10432</h3>
+                <p>Individual SHAP Attribution &amp; Factor Breakdown</p>
+            </div>
+
+            <div style="display:flex; gap:2rem; margin: 1rem 0; padding: 0.85rem; background:#f8fafc; border-radius:10px;">
+                <div>
+                    <span style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:600;">Churn Probability</span>
+                    <div id="modal-prob" style="font-size:1.5rem; font-weight:800; color:var(--risk-high);">—</div>
+                </div>
+                <div>
+                    <span style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:600;">Risk Category</span>
+                    <div id="modal-risk-pill" style="margin-top:4px;"><span class="risk-pill pill-high">High</span></div>
+                </div>
+                <div>
+                    <span style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:600;">Contract &amp; Tenure</span>
+                    <div id="modal-contract" style="font-size:0.95rem; font-weight:600; color:var(--text-primary); margin-top:4px;">—</div>
+                </div>
+                <div>
+                    <span style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:600;">Monthly Bill</span>
+                    <div id="modal-bill" style="font-size:0.95rem; font-weight:600; color:var(--text-primary); margin-top:4px;">—</div>
+                </div>
+            </div>
+
+            <div style="font-size:0.85rem; font-weight:700; color:var(--text-primary); margin-top:1rem;">
+                SHAP Force Plot (Directional Factor Attribution)
+            </div>
+            <img id="modal-shap-img" class="shap-plot-img" src="" alt="Loading SHAP explanation...">
+
+            <div style="font-size:0.85rem; font-weight:700; color:var(--text-primary); margin-top:0.75rem;">
+                Key Influencing Drivers for this Account:
+            </div>
+            <div class="shap-features-grid" id="modal-drivers-grid">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Application JavaScript -->
+    <script src="/static/router.js?v=4"></script>
+    <script src="/static/app.js?v=4"></script>
+</body>
+</html>
