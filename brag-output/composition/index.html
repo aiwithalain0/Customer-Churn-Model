@@ -1,0 +1,924 @@
+<!doctype html>
+<html lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>CustomerIQ — Enterprise Churn Intelligence Launch</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <!-- GSAP for seek-safe animation -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html, body {
+        margin: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #0b0f19;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        color: #0f172a;
+      }
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+      }
+
+      /* Base Scene Layering */
+      .scene {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      /* =========================================
+         SCENE 1: THE HOOK (Silent Attrition)
+         0.0s - 3.5s
+      ========================================== */
+      #scene-1 {
+        background: radial-gradient(circle at 50% 40%, #1e293b 0%, #0b0f19 80%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 80px;
+      }
+      .grid-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: linear-gradient(to right, rgba(255,255,255,0.04) 1px, transparent 1px),
+                          linear-gradient(to bottom, rgba(255,255,255,0.04) 1px, transparent 1px);
+        background-size: 60px 60px;
+        opacity: 0.6;
+      }
+      .radar-circle {
+        position: absolute;
+        width: 600px;
+        height: 600px;
+        border-radius: 50%;
+        border: 1px solid rgba(59, 130, 246, 0.25);
+        box-shadow: 0 0 40px rgba(37, 99, 235, 0.15);
+      }
+      .radar-circle-inner {
+        position: absolute;
+        width: 360px;
+        height: 360px;
+        border-radius: 50%;
+        border: 1px dashed rgba(59, 130, 246, 0.35);
+      }
+      .hook-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 18px;
+        border-radius: 9999px;
+        background: rgba(239, 68, 68, 0.15);
+        border: 1px solid rgba(239, 68, 68, 0.4);
+        color: #f87171;
+        font-size: 16px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 28px;
+        z-index: 2;
+      }
+      .hook-title {
+        font-size: 72px;
+        font-weight: 900;
+        color: #ffffff;
+        letter-spacing: -0.03em;
+        line-height: 1.15;
+        max-width: 1200px;
+        margin-bottom: 24px;
+        z-index: 2;
+        text-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      }
+      .hook-subtitle {
+        font-size: 32px;
+        font-weight: 500;
+        color: #cbd5e1;
+        max-width: 950px;
+        line-height: 1.4;
+        z-index: 2;
+      }
+      .warning-nodes {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+      }
+      .data-node {
+        position: absolute;
+        padding: 10px 18px;
+        background: rgba(15, 23, 42, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(8px);
+        border-radius: 10px;
+        color: #e2e8f0;
+        font-size: 14px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      }
+      .node-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+      .node-red { background: #ef4444; box-shadow: 0 0 10px #ef4444; }
+      .node-amber { background: #f59e0b; box-shadow: 0 0 10px #f59e0b; }
+
+      /* =========================================
+         SCENE 2: COMMAND CENTER & REAL-TIME KPIS
+         3.5s - 8.5s
+      ========================================== */
+      #scene-2 {
+        background: #f8fafc;
+        display: flex;
+        flex-direction: column;
+        padding: 60px 80px;
+      }
+      .app-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 40px;
+      }
+      .brand-box {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .brand-icon {
+        width: 54px;
+        height: 54px;
+        background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+      }
+      .brand-info h2 {
+        font-size: 28px;
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+      }
+      .brand-info p {
+        font-size: 14px;
+        color: #475569;
+        font-weight: 500;
+      }
+      .model-status-badge {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 20px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 30px;
+        font-size: 15px;
+        font-weight: 600;
+        color: #0f172a;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      }
+      .status-pulse {
+        width: 10px;
+        height: 10px;
+        background: #10b981;
+        border-radius: 50%;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+      }
+      .section-headline {
+        margin-bottom: 30px;
+      }
+      .section-headline h1 {
+        font-size: 42px;
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: -0.03em;
+        margin-bottom: 8px;
+      }
+      .section-headline p {
+        font-size: 18px;
+        color: #475569;
+        font-weight: 500;
+      }
+      .kpi-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 24px;
+        margin-bottom: 40px;
+      }
+      .kpi-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 32px 28px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .kpi-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .kpi-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .icon-blue { background: #eff6ff; color: #1d4ed8; }
+      .icon-red { background: #fee2e2; color: #dc2626; }
+      .icon-green { background: #d1fae5; color: #059669; }
+      .icon-purple { background: #ede9fe; color: #7c3aed; }
+      .kpi-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #475569;
+      }
+      .kpi-metric {
+        font-size: 48px;
+        font-weight: 900;
+        color: #0f172a;
+        letter-spacing: -0.03em;
+        line-height: 1;
+      }
+      .kpi-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 14px;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 8px;
+        width: fit-content;
+      }
+      .badge-up-red { background: #fee2e2; color: #b91c1c; }
+      .badge-green { background: #d1fae5; color: #047857; }
+
+      /* Sub banner */
+      .overview-banner {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 24px 36px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+      }
+      .banner-item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .banner-item span {
+        font-size: 16px;
+        color: #334155;
+        font-weight: 600;
+      }
+
+      /* =========================================
+         SCENE 3: EXPLAINABLE AI (SHAP DEEP DIVE)
+         8.5s - 14.0s
+      ========================================== */
+      #scene-3 {
+        background: radial-gradient(circle at 75% 30%, #1e293b 0%, #0f172a 100%);
+        padding: 60px 80px;
+        display: flex;
+        flex-direction: column;
+        color: #ffffff;
+      }
+      .xai-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 36px;
+      }
+      .xai-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        border-radius: 8px;
+        background: rgba(59, 130, 246, 0.2);
+        border: 1px solid rgba(59, 130, 246, 0.5);
+        color: #60a5fa;
+        font-size: 14px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 12px;
+      }
+      .xai-title {
+        font-size: 42px;
+        font-weight: 900;
+        letter-spacing: -0.02em;
+        color: #ffffff;
+      }
+      .xai-subtitle {
+        font-size: 18px;
+        color: #cbd5e1;
+        font-weight: 500;
+        margin-top: 6px;
+      }
+      .customer-pill {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        padding: 12px 24px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .pill-id {
+        font-size: 16px;
+        font-weight: 700;
+        color: #ffffff;
+      }
+      .pill-risk {
+        background: #dc2626;
+        color: #ffffff;
+        font-size: 14px;
+        font-weight: 800;
+        padding: 4px 12px;
+        border-radius: 9999px;
+        box-shadow: 0 0 12px rgba(220, 38, 38, 0.5);
+      }
+
+      /* XAI Split Container */
+      .xai-grid {
+        display: grid;
+        grid-template-columns: 1.4fr 1fr;
+        gap: 32px;
+        flex: 1;
+      }
+      .shap-card {
+        background: rgba(30, 41, 59, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(12px);
+        border-radius: 20px;
+        padding: 32px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      .shap-card-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+      }
+      .shap-card-head h3 {
+        font-size: 20px;
+        font-weight: 700;
+        color: #ffffff;
+      }
+      .shap-legend {
+        display: flex;
+        gap: 16px;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .legend-push { color: #f87171; display: flex; align-items: center; gap: 6px; }
+      .legend-pull { color: #34d399; display: flex; align-items: center; gap: 6px; }
+
+      .factors-table {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+      .factor-row {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .factor-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 16px;
+        font-weight: 600;
+        color: #e2e8f0;
+      }
+      .factor-impact {
+        font-weight: 700;
+      }
+      .impact-push { color: #f87171; }
+      .impact-pull { color: #34d399; }
+      .bar-track {
+        height: 12px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 6px;
+        overflow: hidden;
+      }
+      .bar-fill {
+        height: 100%;
+        border-radius: 6px;
+        width: 0%;
+      }
+      .fill-red { background: linear-gradient(90deg, #ef4444, #f87171); }
+      .fill-amber { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+
+      /* Action recommendation panel */
+      .action-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+      .rec-card {
+        background: rgba(30, 41, 59, 0.7);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 20px;
+        padding: 32px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      }
+      .rec-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        background: rgba(16, 185, 129, 0.2);
+        border: 1px solid rgba(16, 185, 129, 0.5);
+        color: #34d399;
+        font-size: 13px;
+        font-weight: 700;
+        border-radius: 9999px;
+        width: fit-content;
+      }
+      .rec-title {
+        font-size: 22px;
+        font-weight: 800;
+        color: #ffffff;
+        line-height: 1.3;
+      }
+      .rec-desc {
+        font-size: 16px;
+        color: #cbd5e1;
+        line-height: 1.5;
+      }
+      .rec-impact-stat {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: rgba(15, 23, 42, 0.6);
+        padding: 16px 20px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .rec-impact-label {
+        font-size: 14px;
+        color: #94a3b8;
+      }
+      .rec-impact-val {
+        font-size: 22px;
+        font-weight: 800;
+        color: #34d399;
+      }
+
+      /* =========================================
+         SCENE 4: BRAND OUTRO & EXECUTIVE DELIVERY
+         14.0s - 18.0s
+      ========================================== */
+      #scene-4 {
+        background: radial-gradient(circle at 50% 45%, #172554 0%, #0b0f19 75%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 80px;
+        color: #ffffff;
+      }
+      .outro-logo {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, #2563eb, #60a5fa);
+        border-radius: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        margin-bottom: 28px;
+        box-shadow: 0 16px 40px rgba(37, 99, 235, 0.45);
+      }
+      .outro-brand-name {
+        font-size: 78px;
+        font-weight: 900;
+        letter-spacing: -0.04em;
+        line-height: 1;
+        margin-bottom: 16px;
+        color: #ffffff;
+      }
+      .outro-tagline {
+        font-size: 30px;
+        font-weight: 600;
+        color: #93c5fd;
+        margin-bottom: 36px;
+        letter-spacing: -0.01em;
+      }
+      .stack-badges {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 44px;
+      }
+      .badge-pill {
+        padding: 10px 22px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        backdrop-filter: blur(8px);
+        border-radius: 9999px;
+        font-size: 16px;
+        font-weight: 600;
+        color: #e2e8f0;
+      }
+      .action-btn-mock {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 18px 40px;
+        background: #ffffff;
+        color: #0f172a;
+        font-size: 19px;
+        font-weight: 700;
+        border-radius: 14px;
+        box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Composition Root -->
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="18"
+      data-width="1920"
+      data-height="1080"
+    >
+      <!-- Audio Elements -->
+      <audio id="bgm" data-track-index="1" data-start="0" data-duration="18" data-volume="0.75" src="assets/music/music.mp3"></audio>
+      <audio id="sfx-tick1" data-track-index="2" data-start="4.10" data-duration="0.30" data-volume="0.4" src="assets/sfx/tick.ogg"></audio>
+      <audio id="sfx-tick2" data-track-index="2" data-start="4.64" data-duration="0.30" data-volume="0.4" src="assets/sfx/tick.ogg"></audio>
+      <audio id="sfx-tick3" data-track-index="2" data-start="5.19" data-duration="0.30" data-volume="0.4" src="assets/sfx/tick.ogg"></audio>
+      <audio id="sfx-tick4" data-track-index="2" data-start="5.74" data-duration="0.30" data-volume="0.4" src="assets/sfx/tick.ogg"></audio>
+      <audio id="sfx-impact" data-track-index="3" data-start="8.73" data-duration="0.55" data-volume="0.5" src="assets/sfx/impact.ogg"></audio>
+      <audio id="sfx-chime" data-track-index="3" data-start="12.2" data-duration="0.05" data-volume="0.5" src="assets/sfx/chime.ogg"></audio>
+
+      <!-- SCENE 1: THE PROBLEM -->
+      <div id="scene-1" class="scene clip" data-scene="1" data-start="0" data-duration="3.5">
+        <div class="grid-bg"></div>
+        <div class="radar-circle"></div>
+        <div class="radar-circle-inner"></div>
+
+        <div class="hook-tag" id="s1-tag">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          Silent Customer Attrition
+        </div>
+        <h1 class="hook-title" id="s1-title">Every customer leaves clues.</h1>
+        <p class="hook-subtitle" id="s1-sub">Most teams only notice after they've already churned.</p>
+
+        <div class="warning-nodes">
+          <div class="data-node" id="node-1" style="top: 220px; left: 160px;">
+            <span class="node-dot node-red"></span> Account #3821-M — 88% Churn Risk
+          </div>
+          <div class="data-node" id="node-2" style="bottom: 240px; right: 200px;">
+            <span class="node-dot node-amber"></span> Contract: Month-to-Month Alert
+          </div>
+        </div>
+      </div>
+
+      <!-- SCENE 2: COMMAND CENTER & REAL-TIME KPIS -->
+      <div id="scene-2" class="scene clip" data-scene="2" data-start="3.5" data-duration="5.0">
+        <header class="app-header">
+          <div class="brand-box">
+            <div class="brand-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+              </svg>
+            </div>
+            <div class="brand-info">
+              <h2>CustomerIQ</h2>
+              <p>Smarter Insights. Stronger Relationships.</p>
+            </div>
+          </div>
+          <div class="model-status-badge">
+            <span class="status-pulse"></span>
+            XGBoost &amp; SHAP explainer ready
+          </div>
+        </header>
+
+        <div class="section-headline">
+          <h1>Command Center: Churn Intelligence</h1>
+          <p>Trained ML inference predicting churn risk across all 7,043 enterprise accounts.</p>
+        </div>
+
+        <div class="kpi-row">
+          <!-- Total Customers -->
+          <div class="kpi-card" id="kpi-card-1">
+            <div class="kpi-head">
+              <span class="kpi-title">Total Customers</span>
+              <div class="kpi-icon icon-blue">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="kpi-metric">7,043</div>
+            <div class="kpi-badge badge-green">↑ Active Accounts</div>
+          </div>
+
+          <!-- At-Risk Customers -->
+          <div class="kpi-card" id="kpi-card-2">
+            <div class="kpi-head">
+              <span class="kpi-title">At-Risk Accounts</span>
+              <div class="kpi-icon icon-red">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                  <line x1="12" y1="9" x2="12" y2="13"></line>
+                  <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+              </div>
+            </div>
+            <div class="kpi-metric" style="color: #dc2626;">3,063</div>
+            <div class="kpi-badge badge-up-red">↑ Immediate Action Needed</div>
+          </div>
+
+          <!-- Churn Rate -->
+          <div class="kpi-card" id="kpi-card-3">
+            <div class="kpi-head">
+              <span class="kpi-title">Churn Baseline</span>
+              <div class="kpi-icon icon-green">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                  <polyline points="9 12 11 14 15 10"></polyline>
+                </svg>
+              </div>
+            </div>
+            <div class="kpi-metric">26.5%</div>
+            <div class="kpi-badge badge-green">Historical Ground Truth</div>
+          </div>
+
+          <!-- Predicted Retention -->
+          <div class="kpi-card" id="kpi-card-4">
+            <div class="kpi-head">
+              <span class="kpi-title">Expected Retention</span>
+              <div class="kpi-icon icon-purple">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="23 4 23 10 17 10"></polyline>
+                  <polyline points="1 20 1 14 7 14"></polyline>
+                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="kpi-metric">56.7%</div>
+            <div class="kpi-badge badge-green">↑ 30-Day Outlook</div>
+          </div>
+        </div>
+
+        <div class="overview-banner">
+          <div class="banner-item">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+            <span>Real-Time Churn Cohort Segmentation</span>
+          </div>
+          <div class="banner-item">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+            <span>Individual Factor Attribution with SHAP TreeExplainer</span>
+          </div>
+          <div class="banner-item">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+            <span>Automated Churn Defense Export</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCENE 3: EXPLAINABLE AI (SHAP DEEP DIVE) -->
+      <div id="scene-3" class="scene clip" data-scene="3" data-start="8.5" data-duration="5.5">
+        <div class="xai-header">
+          <div>
+            <div class="xai-tag">Explainable AI (XAI)</div>
+            <h2 class="xai-title">Transparent Factor Attribution</h2>
+            <p class="xai-subtitle">Don't settle for black-box probability. See exact drivers for every customer.</p>
+          </div>
+          <div class="customer-pill">
+            <span class="pill-id">Account: #7590-VHVEG</span>
+            <span class="pill-risk">84.2% Churn Risk</span>
+          </div>
+        </div>
+
+        <div class="xai-grid">
+          <!-- SHAP Factor Drivers -->
+          <div class="shap-card">
+            <div>
+              <div class="shap-card-head">
+                <h3>Top Risk Drivers (SHAP Value Impact)</h3>
+                <div class="shap-legend">
+                  <span class="legend-push">● Pushes Toward Churn</span>
+                </div>
+              </div>
+
+              <div class="factors-table">
+                <!-- Driver 1 -->
+                <div class="factor-row">
+                  <div class="factor-meta">
+                    <span>Month-to-month Contract</span>
+                    <span class="factor-impact impact-push">+0.42 SHAP</span>
+                  </div>
+                  <div class="bar-track">
+                    <div class="bar-fill fill-red" id="bar-1"></div>
+                  </div>
+                </div>
+
+                <!-- Driver 2 -->
+                <div class="factor-row">
+                  <div class="factor-meta">
+                    <span>Tenure: 1 Month (Early Cohort)</span>
+                    <span class="factor-impact impact-push">+0.28 SHAP</span>
+                  </div>
+                  <div class="bar-track">
+                    <div class="bar-fill fill-red" id="bar-2"></div>
+                  </div>
+                </div>
+
+                <!-- Driver 3 -->
+                <div class="factor-row">
+                  <div class="factor-meta">
+                    <span>Fiber Optic Internet</span>
+                    <span class="factor-impact impact-push">+0.18 SHAP</span>
+                  </div>
+                  <div class="bar-track">
+                    <div class="bar-fill fill-amber" id="bar-3"></div>
+                  </div>
+                </div>
+
+                <!-- Driver 4 -->
+                <div class="factor-row">
+                  <div class="factor-meta">
+                    <span>Electronic Check Payment</span>
+                    <span class="factor-impact impact-push">+0.12 SHAP</span>
+                  </div>
+                  <div class="bar-track">
+                    <div class="bar-fill fill-amber" id="bar-4"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style="font-size: 14px; color: #94a3b8; font-weight: 500; margin-top: 16px;">
+              Attributes computed dynamically via Shapley Additive Explanations.
+            </div>
+          </div>
+
+          <!-- Action & Simulation Panel -->
+          <div class="action-panel">
+            <div class="rec-card" id="rec-card">
+              <span class="rec-badge">Proactive Retention Action</span>
+              <h3 class="rec-title">Offer 1-Year Contract Discount</h3>
+              <p class="rec-desc">CustomerIQ detects Contract type as primary driver. Converting to annual plan neutralizes 65% of churn probability.</p>
+              
+              <div class="rec-impact-stat">
+                <span class="rec-impact-label">Post-Intervention Risk</span>
+                <span class="rec-impact-val">19.4% (Low Risk)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCENE 4: BRAND OUTRO & EXECUTIVE DELIVERY -->
+      <div id="scene-4" class="scene clip" data-scene="4" data-start="14.0" data-duration="4.0">
+        <div class="outro-logo" id="outro-logo">
+          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.8">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+        </div>
+
+        <h1 class="outro-brand-name" id="outro-name">CustomerIQ</h1>
+        <p class="outro-tagline" id="outro-tag">Smarter Insights. Stronger Relationships.</p>
+
+        <div class="stack-badges" id="outro-badges">
+          <div class="badge-pill">FastAPI Server</div>
+          <div class="badge-pill">Trained XGBoost Classifier</div>
+          <div class="badge-pill">SHAP Explainable AI</div>
+        </div>
+
+        <div class="action-btn-mock" id="outro-btn">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Export Churn Defense Report (CSV)
+        </div>
+      </div>
+
+    </div>
+
+    <!-- GSAP Seek-Safe Animation Script -->
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // ==========================================
+      // SCENE 1 TIMELINE (0.0s - 3.5s)
+      // ==========================================
+      tl.set("#scene-1", { opacity: 1 }, 0);
+      tl.fromTo("#s1-tag", { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 0.2);
+      tl.fromTo("#s1-title", { opacity: 0, scale: 0.95 }, { opacity: 1, scale: 1, duration: 0.8, ease: "power2.out" }, 0.4);
+      tl.fromTo("#s1-sub", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.7, ease: "power2.out" }, 0.9);
+      tl.fromTo(".radar-circle", { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 1.5, ease: "power1.out" }, 0.2);
+      tl.fromTo("#node-1", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.6, ease: "back.out(1.5)" }, 1.37);
+      tl.fromTo("#node-2", { opacity: 0, x: 30 }, { opacity: 1, x: 0, duration: 0.6, ease: "back.out(1.5)" }, 1.90);
+      tl.to("#scene-1", { opacity: 0, scale: 1.04, duration: 0.4, ease: "power2.in" }, 3.2);
+
+      // ==========================================
+      // SCENE 2 TIMELINE (3.5s - 8.5s)
+      // ==========================================
+      tl.set("#scene-2", { opacity: 1 }, 3.5);
+      tl.fromTo(".app-header", { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 3.55);
+      tl.fromTo(".section-headline", { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 3.75);
+
+      // Beat-grid sequential reveals for 4 KPI cards (aligned to beats 4.10, 4.64, 5.19, 5.74)
+      tl.fromTo("#kpi-card-1", { opacity: 0, y: 30, scale: 0.95 }, { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "back.out(1.4)" }, 4.10);
+      tl.fromTo("#kpi-card-2", { opacity: 0, y: 30, scale: 0.95 }, { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "back.out(1.4)" }, 4.64);
+      tl.fromTo("#kpi-card-3", { opacity: 0, y: 30, scale: 0.95 }, { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "back.out(1.4)" }, 5.19);
+      tl.fromTo("#kpi-card-4", { opacity: 0, y: 30, scale: 0.95 }, { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "back.out(1.4)" }, 5.74);
+
+      tl.fromTo(".overview-banner", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 6.28);
+      tl.to("#scene-2", { opacity: 0, x: -60, duration: 0.4, ease: "power2.in" }, 8.2);
+
+      // ==========================================
+      // SCENE 3 TIMELINE (8.5s - 14.0s)
+      // ==========================================
+      tl.set("#scene-3", { opacity: 1 }, 8.5);
+      tl.fromTo(".xai-header", { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 8.73);
+      tl.fromTo(".shap-card", { opacity: 0, scale: 0.96 }, { opacity: 1, scale: 1, duration: 0.5, ease: "power2.out" }, 8.9);
+
+      // SHAP bars expand sequentially
+      tl.to("#bar-1", { width: "85%", duration: 0.7, ease: "power2.out" }, 9.29);
+      tl.to("#bar-2", { width: "62%", duration: 0.7, ease: "power2.out" }, 9.83);
+      tl.to("#bar-3", { width: "45%", duration: 0.7, ease: "power2.out" }, 10.38);
+      tl.to("#bar-4", { width: "32%", duration: 0.7, ease: "power2.out" }, 10.93);
+
+      // Action card pops up
+      tl.fromTo("#rec-card", { opacity: 0, y: 40, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "back.out(1.5)" }, 11.47);
+      tl.to("#scene-3", { opacity: 0, scale: 0.96, duration: 0.4, ease: "power2.in" }, 13.7);
+
+      // ==========================================
+      // SCENE 4 TIMELINE (14.0s - 18.0s)
+      // ==========================================
+      tl.set("#scene-4", { opacity: 1 }, 14.0);
+      tl.fromTo("#outro-logo", { opacity: 0, scale: 0.4, rotation: -10 }, { opacity: 1, scale: 1, rotation: 0, duration: 0.6, ease: "back.out(1.8)" }, 14.20);
+      tl.fromTo("#outro-name", { opacity: 0, y: 25 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 14.6);
+      tl.fromTo("#outro-tag", { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 14.9);
+      tl.fromTo("#outro-badges", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.5, ease: "power2.out" }, 15.3);
+      tl.fromTo("#outro-btn", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.5)" }, 15.82);
+
+      // Fade out to black at very end
+      tl.to("#root", { opacity: 0, duration: 0.6, ease: "power2.in" }, 17.4);
+
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

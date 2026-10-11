@@ -1,0 +1,1 @@
+Introducing CustomerIQ: Enterprise customer churn intelligence powered by XGBoost & SHAP. Don't just predict who leaves — uncover transparent factor attribution for every account before they do.
