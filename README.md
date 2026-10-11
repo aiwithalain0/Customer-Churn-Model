@@ -1,6 +1,5 @@
 
-
-
+https://github.com/user-attachments/assets/d2d2435c-22f2-48cf-9aa4-80348dca8418
 
 
 # 📊 CustomerIQ — Enterprise Customer Churn Prediction & Explainable AI (XAI)
